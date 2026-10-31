@@ -1,0 +1,105 @@
+# FinTrack CD — deploys the Web API to Azure App Service through a staging slot.
+#
+# Model used (blue/green with slots):
+#   1. Deploy build artifact to the 'staging' slot                (automated)
+#   2. Warm + smoke-check /health on staging                     (automated)
+#   3. Manual approval on the 'fintrack-production' Environment  (Azure DevOps gate)
+#   4. Swap staging -> production; old bits stay in staging for instant rollback
+#
+# Wire in Azure DevOps: Pipelines → New Pipeline → Existing YAML → pipelines/cd.yml
+# Required variable group 'fintrack-deploy':
+#   azureSubscription | appName | resourceGroupName
+name: FinTrack-CD
+
+trigger: none
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Deploy_Staging
+    displayName: Deploy to staging slot
+    jobs:
+      - deployment: deploy_api_staging
+        environment: 'fintrack-staging'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@1
+                  displayName: Download API artifact from CI
+                  inputs:
+                    buildType: specific
+                    project: 'FinTrack'
+                    pipeline: 'FinTrack-CI'
+                    buildVersionToDownload: latest
+                    artifactName: api-drop
+                    downloadPath: '$(Pipeline.Workspace)/api'
+
+                - task: AzureWebApp@1
+                  displayName: Deploy to staging slot
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appType: webAppLinux
+                    appName: '$(appName)'
+                    resourceGroupName: '$(resourceGroupName)'
+                    deployToSlotOrASE: true
+                    slotName: 'staging'
+                    package: '$(Pipeline.Workspace)/api/**'
+
+                - task: AzureCLI@2
+                  displayName: Warm + smoke-test staging slot
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      url="https://$(appName)-staging.azurewebsites.net/health"
+                      for i in $(seq 1 30); do
+                        code=$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)
+                        if [ "$code" = "200" ]; then
+                          echo "##vso[task.setvariable variable=smoke]passed"
+                          echo "Staging slot is healthy."
+                          exit 0
+                        fi
+                        echo "waiting for staging… ($code)"
+                        sleep 5
+                      done
+                      echo "Staging never became healthy" >&2
+                      exit 1
+
+  - stage: Promote_Production
+    displayName: Promote to production (swap slots)
+    dependsOn: Deploy_Staging
+    condition: succeeded()
+    jobs:
+      - deployment: swap_to_production
+        # Attach the approval policy + authorized users on this Environment in DevOps.
+        environment: 'fintrack-production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureAppServiceManage@0
+                  displayName: Swap staging → production
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    WebAppName: '$(appName)'
+                    ResourceGroupName: '$(resourceGroupName)'
+                    SourceSlot: 'staging'
+                    SwapWithProductionAction: 'Swap Slots'
+
+                - task: AzureCLI@2
+                  displayName: Post-swap smoke test on production
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      code=$(curl -s -o /dev/null -w '%{http_code}' "https://$(appName).azurewebsites.net/health" || true)
+                      if [ "$code" != "200" ]; then
+                        echo "Production swap failed health check ($code). Roll back via another swap of staging in the portal." >&2
+                        exit 1
+                      fi
+                      echo "Production healthy."

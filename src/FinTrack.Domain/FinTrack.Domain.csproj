@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>FinTrack domain model: banking entities, value types and invariants.</Description>
+  </PropertyGroup>
+
+</Project>

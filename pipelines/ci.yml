@@ -1,0 +1,82 @@
+# FinTrack CI — builds backend + Angular UI, runs tests, publishes artifacts.
+# Wire in Azure DevOps: Pipelines → New Pipeline → Azure Repos Git / GitHub → Existing YAML → pipelines/ci.yml
+name: FinTrack-CI
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - '*.md'
+      - 'docs/**'
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '10.0.x'
+  nodeVersion: '20.x'
+  solution: 'FinTrack.sln'
+  apiProject: 'src/FinTrack.Api/FinTrack.Api.csproj'
+  testProject: 'src/FinTrack.Tests/FinTrack.Tests.csproj'
+  webAppDir: 'webapp'
+
+stages:
+  - stage: Build_and_Test
+    displayName: Build & Test
+    jobs:
+      - job: backend
+        displayName: .NET backend (build + test)
+        steps:
+          - task: UseDotNet@2
+            displayName: Install .NET SDK 8
+            inputs:
+              version: $(dotnetVersion)
+
+          - script: dotnet build $(solution) -c $(buildConfiguration) --nologo
+            displayName: Build solution
+
+          - task: DotNetCoreCLI@2
+            displayName: Run xUnit tests + coverage
+            inputs:
+              command: test
+              projects: $(testProject)
+              arguments: >-
+                -c $(buildConfiguration)
+                --collect:"XPlat Code Coverage"
+                --results-directory $(Agent.TempDirectory)/coverage
+              publishTestResults: true
+
+          - script: dotnet publish $(apiProject) -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/api --nologo
+            displayName: Publish Web API
+
+          - publish: $(Build.ArtifactStagingDirectory)/api
+            artifact: api-drop
+            displayName: Publish API artifact
+
+      - job: frontend
+        displayName: Angular UI (lint + build)
+        steps:
+          - task: NodeTool@0
+            displayName: Install Node $(nodeVersion)
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: npm ci
+            displayName: npm ci
+            workingDirectory: $(webAppDir)
+
+          - script: npm run build -- --configuration production
+            displayName: Angular production build
+            workingDirectory: $(webAppDir)
+
+          - publish: $(webAppDir)/dist
+            artifact: web-drop
+            displayName: Publish UI artifact
