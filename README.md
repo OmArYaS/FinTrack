@@ -7,9 +7,9 @@ an Angular SPA consuming an ASP.NET Core Web API over a business layer arranged 
 **Clean Architecture**, an **MS SQL Server** data tier (tables, stored procedures, indexed views),
 **Azure AD B2C single sign-on**, and a **CI/CD pipeline with staging-slot deployments**.
 
-> Built as a portfolio piece for my Siemens TA application — it demonstrates the exact
-> shapes I am expected to own: layered .NET services, EF Core code-first migrations,
-> SPA + API contract discipline, and pipelines that deploy with slots.
+> Built as a portfolio project to demonstrate the shapes a fintech employer expects you to
+> own: layered .NET services, EF Core code-first migrations, SPA + API contract discipline,
+> and a pipeline that deploys with staging slots.
 
 ---
 
@@ -53,10 +53,10 @@ FinTrack/
 │   ├── FinTrack.Infrastructure/    # EF Core DbContext, migrations, initializer, auth glue
 │   ├── FinTrack.Api/               # controllers, JWT config, ProblemDetails middleware
 │   └── FinTrack.Tests/             # xUnit: rule matrix + WebApplicationFactory contract tests
-├── webapp/                         # Angular 17 SPA (standalone components)
-├── database/                       # SQL scripts mirroring the model (01–04)
-├── docs/                           # architecture, database, security
-└── pipelines/                        # CI + CD definitions (slots)
+├── webapp/                            # Angular 17 SPA (standalone components)
+├── database/                          # SQL scripts (01 tables · 02 procs · 03 indexed views · 04 demo seed)
+├── docs/                              # architecture, database, security
+└── pipelines/                         # CI + CD definitions (slots)
 ```
 
 ## Quickstart (runs with zero external dependencies)
@@ -77,7 +77,8 @@ npm start                           # → http://localhost:4200  (proxies /api �
 to `POST /api/auth/token`. Point `Auth:Mode=AzureAdB2C` at your tenant section to switch on real SSO.
 
 **MS SQL Server:** set `Database:Provider=SqlServer`, adjust connection string `SqlServer`,
-run migrations (applied at startup), then `database/02_stored_procedures.sql` + `03_indexed_views.sql`.
+run migrations (applied at startup), then execute `database/02_stored_procedures.sql`,
+`03_indexed_views.sql`, and `04_seed_demo.sql` for the demo dataset.
 
 ## API surface (abbreviated)
 
