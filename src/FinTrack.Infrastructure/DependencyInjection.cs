@@ -9,7 +9,7 @@ public static class DependencyInjection
 {
     /// <summary>
     /// Registers persistence + cross-cutting infrastructure.
-    /// Database:Provider = SqlServer (production / Azure SQL) | Sqlite (zero-setup demo).
+    /// Database:Provider = SqlServer (production / MS SQL Server) | Sqlite (zero-setup demo).
     /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services, IConfiguration configuration)

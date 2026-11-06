@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FinTrack.Infrastructure.Persistence;
 
 /// <summary>
-/// Code-first model for Azure SQL / SQL Server (migrations) and SQLite (zero-setup demo).
+/// Code-first model for MS SQL Server (migrations) and SQLite (zero-setup demo).
 /// Model configuration lives in <see cref="FinTrackEntityConfigurations"/>.
 /// </summary>
 public sealed class FinTrackDbContext(DbContextOptions<FinTrackDbContext> options)

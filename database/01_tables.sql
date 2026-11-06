@@ -1,6 +1,6 @@
 -- ===========================================================================
 -- FinTrack — 01 Tables
--- Target: Azure SQL / SQL Server 2019+
+-- Target: MS SQL Server 2019+
 -- Convention: Ids are GUIDs (matches EF Core model), UNSIGNED decimals for money
 --             are NOT used; decimal(18,2) with precision. UTC dates only (datetimeoffset).
 -- Run: the EF Core baseline migration creates these same tables; these scripts are

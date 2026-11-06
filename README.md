@@ -1,11 +1,11 @@
 # FinTrack — Enterprise Banking Operations Portal
 
-![.NET 10](https://img.shields.io/badge/.NET-10-LTS-blueviolet) ![Angular](https://img.shields.io/badge/Angular-17-dd0031) ![Azure SQL](https://img.shields.io/badge/Azure%20SQL-ok-blue) ![Tests](https://img.shields.io/badge/tests-xUnit%2029%20passing-green) [![Build Status](https://img.shields.io/badge/Azure%20DevOps-CI%2FCD-passing)](#deployment)
+![.NET 10](https://img.shields.io/badge/.NET-10-LTS-blueviolet) ![Angular](https://img.shields.io/badge/Angular-17-dd0031) ![MS SQL Server](https://img.shields.io/badge/MS%20SQL%20Server-2019%2B-red) ![Tests](https://img.shields.io/badge/tests-xUnit%2029%20passing-green)
 
 A role-based banking operations portal built **end to end with the Microsoft stack**:
 an Angular SPA consuming an ASP.NET Core Web API over a business layer arranged with
-**Clean Architecture**, an **Azure SQL** data tier (tables, stored procedures, indexed views),
-**Azure AD B2C single sign-on**, and **Azure DevOps delivery with staging-slot deployments**.
+**Clean Architecture**, an **MS SQL Server** data tier (tables, stored procedures, indexed views),
+**Azure AD B2C single sign-on**, and a **CI/CD pipeline with staging-slot deployments**.
 
 > Built as a portfolio piece for my Siemens TA application — it demonstrates the exact
 > shapes I am expected to own: layered .NET services, EF Core code-first migrations,
@@ -37,7 +37,7 @@ flowchart LR
         API --> INF["Infrastructure\n(EF Core · migrations)"]
         INF --> APP
     end
-    APP & INF --> DB[("Azure SQL / SQL Server\nprocs + indexed views")]
+    APP & INF --> DB[("MS SQL Server\nprocs + indexed views")]
 ```
 
 Full detail: [`docs/architecture.md`](docs/architecture.md) · Database design: [`docs/database.md`](docs/database.md) · Security: [`docs/security.md`](docs/security.md)
@@ -56,7 +56,7 @@ FinTrack/
 ├── webapp/                         # Angular 17 SPA (standalone components)
 ├── database/                       # SQL scripts mirroring the model (01–04)
 ├── docs/                           # architecture, database, security
-└── pipelines/                      # Azure DevOps CI + CD (slots)
+└── pipelines/                        # CI + CD definitions (slots)
 ```
 
 ## Quickstart (runs with zero external dependencies)
@@ -76,7 +76,7 @@ npm start                           # → http://localhost:4200  (proxies /api �
 `admin` · `teller` · `amira` (customer) · `tarek` (customer) — the UI login screen posts
 to `POST /api/auth/token`. Point `Auth:Mode=AzureAdB2C` at your tenant section to switch on real SSO.
 
-**SQL Server/Azure SQL:** set `Database:Provider=SqlServer`, adjust connection string `SqlServer`,
+**MS SQL Server:** set `Database:Provider=SqlServer`, adjust connection string `SqlServer`,
 run migrations (applied at startup), then `database/02_stored_procedures.sql` + `03_indexed_views.sql`.
 
 ## API surface (abbreviated)
@@ -111,7 +111,7 @@ dotnet test FinTrack.sln
 - CD: `pipelines/cd.yml` — Web API → **staging slot** → `/health` smoke → approval gate → **slot
   swap** to production (instant rollback by re-swapping). Angular bundle deploys as static content
   via the same slot model (documented in `docs/architecture.md`).
-- Azure provisioning steps (SQL, App Service, Key Vault) — `docs/security.md` § Operational checklist.
+- Environment provisioning checklist — `docs/security.md` § Operational checklist.
 
 ## Roadmap
 

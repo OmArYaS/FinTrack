@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FinTrack.Infrastructure.Persistence.Migrations;
 
 /// <summary>
-/// Code-first baseline for FinTrack on Azure SQL / SQL Server.
+/// Code-first baseline for FinTrack on MS SQL Server.
 /// Kept consistent with database/scripts (DBA-reviewable DDL) and the EF model.
 /// Run with: dotnet ef database update --project src/FinTrack.Infrastructure --startup-project src/FinTrack.Api
 /// </summary>

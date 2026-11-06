@@ -12,7 +12,7 @@ flowchart LR
             API["ASP.NET Core Web API"]
         end
         subgraph Data["Data plane"]
-            SQL[("Azure SQL")]
+            SQL[("MS SQL Server")]
             KV[("Key Vault (secrets)")]
         end
         AAD[("Azure AD B2C\nSSO + roles")]
@@ -78,4 +78,4 @@ key indexing decisions documented in `docs/database.md`.
 - **Contract (xUnit, WebApplicationFactory)** — routing + auth + ProblemDetails through the real
   pipeline; exercises the dev token issuer and role policies end to end.
 - **Database** — scripts vs. migrations cross-checked; procs mirror service codes.
-- **CI** — Azure DevOps pipeline runs tests on every push; CD deploys via staging slots with a swap.
+- **CI/CD** — pipeline runs tests on every push; CD deploys via staging slots with a swap.

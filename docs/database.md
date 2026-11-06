@@ -38,7 +38,7 @@
 - The `Accounts.RowVersion` rowversion token + EF Core optimistic concurrency covers the API path;
   `DbUpdateConcurrencyException` → HTTP 409 with `CONCURRENT_UPDATE`.
 
-## Operational notes (Azure SQL)
+## Operational notes (MS SQL Server)
 
 - Business Critical tier for ledger tables if you need read-replica isolation for reports.
 - Short log backups: the ledger is append-only; PITR retained per compliance (demo repo default).

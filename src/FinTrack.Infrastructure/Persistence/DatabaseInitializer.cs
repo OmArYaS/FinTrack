@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace FinTrack.Infrastructure.Persistence;
 
 /// <summary>
-/// Applies code-first migrations on startup (SQL Server / Azure SQL) or creates a
+/// Applies code-first migrations on startup (MS SQL Server) or creates a
 /// disposable SQLite demo database, then seeds showcase data when the store is empty.
 /// </summary>
 public sealed class DatabaseInitializer(FinTrackDbContext db, IConfiguration configuration, ILogger<DatabaseInitializer> logger)
